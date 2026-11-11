@@ -1,0 +1,37 @@
+
+{
+  "name": "Mon Radar Emploi",
+  "short_name": "Radar Emploi",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#F1F5FA",
+  "theme_color": "#173B6D",
+  "description": "Mon assistant personnel de recherche d'emploi, d'analyse des offres et de suivi des candidatures.",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
