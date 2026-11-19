@@ -1,0 +1,25 @@
+
+name: Radar Emploi quotidien
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *'
+      timezone: 'Europe/Paris'
+
+permissions:
+  contents: read
+
+jobs:
+  radar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le depot
+        uses: actions/checkout@v4
+
+      - name: Verifier la configuration
+        run: |
+          echo "Radar Emploi V1.9.5"
+          echo "Execution quotidienne programmee"
+          echo "Sources en attente d'activation"
+          echo "Aucune modification des fichiers publies"
