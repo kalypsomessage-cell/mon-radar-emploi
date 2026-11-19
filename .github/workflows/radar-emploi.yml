@@ -8,7 +8,7 @@ on:
     - cron: '0 7 * * *'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   radar:
@@ -34,4 +34,20 @@ jobs:
 
       - name: Executer le Radar Emploi
         if: github.event_name == 'workflow_dispatch' || steps.horaire.outputs.heure == '08'
+        env:
+          RADAR_SOURCES_JSON: ${{ secrets.RADAR_SOURCES_JSON }}
         run: python radar/collecte_offres.py
+
+      - name: Publier le bilan sur GitHub Pages
+        if: github.event_name == 'workflow_dispatch' || steps.horaire.outputs.heure == '08'
+        shell: bash
+        run: |
+          if git diff --quiet -- radar_mouries.json; then
+            echo 'Aucun nouveau bilan a publier.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add radar_mouries.json
+          git commit -m 'Radar quotidien : actualiser les offres'
+          git push
