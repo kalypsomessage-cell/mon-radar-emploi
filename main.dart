@@ -63,10 +63,16 @@ class JobReview {
 // Migration des trois candidatures historiques confirmees par l'utilisateur.
 // Une fois sauvegarde, le drapeau persiste independamment du statut.
 bool _legacyInterview(Map<String, dynamic> data) {
-  final name = normalizeOfferText('${data['company'] ?? ''} ${data['title'] ?? ''}');
+  final raw = normalizeOfferText('${data['company'] ?? ''} ${data['title'] ?? ''}');
+  final name = raw.replaceAll(RegExp(r'[^a-z0-9]'), '');
   return name.contains('lecasud') || name.contains('bconnex') ||
-      name.contains('marie blachere');
+      name.contains('marieblachere');
 }
+
+bool _isInterviewStatus(String status) =>
+    status == 'Entretien réalisé' || status == 'Entretien' ||
+    status == 'Attente réponse entretien' ||
+    status == 'En attente retour client';
 
 // V1.5 : correspondances locales et explicables, sans IA ni ajout de qualifications.
 const radarStatuses = <String>[
@@ -184,14 +190,12 @@ class _RadarHomeState extends State<RadarHome> {
         final saved = jsonDecode(prefs.getString('jobs') ?? '[]') as List;
         jobs.addAll(saved.map((e) => JobReview.fromJson(Map<String, dynamic>.from(e as Map))));
         for (final job in jobs) {
-          if (job.status == 'Entretien réalisé' || job.status == 'Entretien' ||
-              job.status == 'Attente réponse entretien' ||
-              job.status == 'En attente retour client') {
-            job.hadInterview = true;
-          }
+          if (_isInterviewStatus(job.status)) job.hadInterview = true;
         }
       } catch (_) { /* A damaged local database must not crash the UI. */ }
     });
+    // Persiste la migration des anciennes candidatures sans changer leur statut.
+    await prefs.setString('jobs', jsonEncode(jobs.map((e) => e.toJson()).toList()));
   }
 
   Map<String, dynamic> backupData() => {
@@ -1131,9 +1135,7 @@ ${candidateName.text.trim()}''';
     final toApply = countCategory('À postuler');
     final waiting = countCategory('En attente de réponse');
     final interviewed = jobs.where((j) => j.hadInterview ||
-        j.status == 'Entretien réalisé' || j.status == 'Entretien' ||
-        j.status == 'Attente réponse entretien' ||
-        j.status == 'En attente retour client').length;
+        _isInterviewStatus(j.status)).length;
     final postInterview = countCategory('Attente réponse entretien');
     final closed = countCategory('Refus / Clôture');
     // Les indicateurs se recoupent : compter les candidatures uniques.
@@ -1367,7 +1369,9 @@ ${candidateName.text.trim()}''';
   Widget tracking() {
     final visible = jobs.where((j) => (statusFilter == 'Toutes' ||
         (statusFilter == 'À relancer' && isInFollowUps(j)) ||
-        (statusFilter != 'À relancer' && radarCategory(j.status) == statusFilter)) &&
+        (statusFilter == 'Entretien réalisé'
+            ? (j.hadInterview || _isInterviewStatus(j.status))
+            : statusFilter != 'À relancer' && radarCategory(j.status) == statusFilter)) &&
         ('${j.title} ${j.company} ${j.notes}'.toLowerCase().contains(search.text.toLowerCase()))).toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     return ListView(padding: const EdgeInsets.all(20), children: [
