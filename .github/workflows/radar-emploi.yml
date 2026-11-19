@@ -3,9 +3,8 @@ name: Radar Emploi quotidien
 
 on:
   workflow_dispatch:
-
   schedule:
-    # 08h00 en hiver (heure de Paris)
+    - cron: '0 6 * * *'
     - cron: '0 7 * * *'
 
 permissions:
@@ -13,28 +12,26 @@ permissions:
 
 jobs:
   radar:
-    name: Preparation du Radar Emploi
+    name: Collecte quotidienne
     runs-on: ubuntu-latest
 
     steps:
-      - name: Recuperer le depot GitHub
+      - name: Recuperer le depot
         uses: actions/checkout@v4
 
-      - name: Afficher la date et l'heure
+      - name: Verifier l'heure francaise
+        id: horaire
+        shell: bash
         run: |
-          echo "Date et heure en France :"
-          TZ=Europe/Paris date
+          HEURE=$(TZ=Europe/Paris date +%H)
+          echo "heure=$HEURE" >> "$GITHUB_OUTPUT"
 
-      - name: Verifier la configuration du radar
-        run: |
-          echo "================================"
-          echo "MON RADAR EMPLOI - V1.9.5"
-          echo "================================"
-          echo "Execution quotidienne programmee"
-          echo "Sources prevues :"
-          echo "- France Travail"
-          echo "- Indeed"
-          echo "- Hellowork"
-          echo "================================"
-          echo "En attente des acces aux sources"
-          echo "Aucune modification des fichiers"
+      - name: Installer Python
+        if: github.event_name == 'workflow_dispatch' || steps.horaire.outputs.heure == '08'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Executer le Radar Emploi
+        if: github.event_name == 'workflow_dispatch' || steps.horaire.outputs.heure == '08'
+        run: python radar/collecte_offres.py
