@@ -3,23 +3,38 @@ name: Radar Emploi quotidien
 
 on:
   workflow_dispatch:
+
   schedule:
+    # 08h00 en hiver (heure de Paris)
     - cron: '0 7 * * *'
-      timezone: 'Europe/Paris'
 
 permissions:
   contents: read
 
 jobs:
   radar:
+    name: Preparation du Radar Emploi
     runs-on: ubuntu-latest
+
     steps:
-      - name: Recuperer le depot
+      - name: Recuperer le depot GitHub
         uses: actions/checkout@v4
 
-      - name: Verifier la configuration
+      - name: Afficher la date et l'heure
         run: |
-          echo "Radar Emploi V1.9.5"
+          echo "Date et heure en France :"
+          TZ=Europe/Paris date
+
+      - name: Verifier la configuration du radar
+        run: |
+          echo "================================"
+          echo "MON RADAR EMPLOI - V1.9.5"
+          echo "================================"
           echo "Execution quotidienne programmee"
-          echo "Sources en attente d'activation"
-          echo "Aucune modification des fichiers publies"
+          echo "Sources prevues :"
+          echo "- France Travail"
+          echo "- Indeed"
+          echo "- Hellowork"
+          echo "================================"
+          echo "En attente des acces aux sources"
+          echo "Aucune modification des fichiers"
