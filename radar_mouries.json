@@ -1,0 +1,11 @@
+
+{
+  "format": "mon_radar_emploi_radar",
+  "version": 1,
+  "date": "2026-11-19",
+  "compteurs": {
+    "a_postuler": 0,
+    "a_etudier": 0
+  },
+  "offres": []
+}
